@@ -1,8 +1,8 @@
 .canvas-container {
   display: flex;
-  gap: 1rem;
+  flex-direction: column;
   flex: 1;
-  padding: 1rem;
+  gap: 1rem;
 }
 
 .canvas-wrapper {
@@ -12,8 +12,8 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  min-height: 700px;
-  max-height: 700px;
+  min-height: 600px;
+  max-height: 600px;
 }
 
 .canvas-header-bar {
@@ -61,6 +61,25 @@
   border-color: #667eea;
 }
 
+/* NEW: Grid Toggle Button */
+.grid-toggle-btn {
+  background: #f0f0f0;
+  color: #666;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.grid-toggle-btn:hover {
+  background: #667eea;
+  color: white;
+  transform: scale(1.05);
+}
+
 .element-count {
   background: #667eea;
   color: white;
@@ -90,9 +109,19 @@
   flex: 1;
   position: relative;
   overflow: visible;
-  height: 600px;
+  height: 500px;
   transition: background-color 0.3s;
+  border-radius: 0 0 12px 12px;
 }
+
+/* BETTER VISIBLE GRID - Darker dots */
+.canvas-dropzone.with-grid {
+  background-image: 
+    radial-gradient(circle, rgba(102, 126, 234, 0.4) 2px, transparent 2px);
+  background-size: 20px 20px;
+  background-position: 0 0;
+}
+
 
 .empty-state {
   position: absolute;
@@ -103,6 +132,7 @@
   color: #999;
   font-size: 1.2rem;
   pointer-events: none;
+  z-index: 0;
 }
 
 .hint {
@@ -317,15 +347,16 @@
   opacity: 1;
 }
 
+/* Preview Panel - SAME HEIGHT AS CANVAS */
 .preview-panel {
-  flex: 1;
+  width: 100%;
   background: white;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  min-height: 700px;
-  max-height: 700px;
+  min-height: 600px;
+  max-height: 600px;
   overflow: hidden;
 }
 
@@ -373,7 +404,7 @@
 
 .preview-canvas {
   position: relative;
-  height: 600px;
+  height: 500px;
   border-radius: 8px;
   border: 2px dashed #ddd;
   background: white;
@@ -544,7 +575,7 @@
   line-height: 1.8;
   margin: 0;
   overflow: auto;
-  max-height: calc(90vh - 250px);
+  height: 400px;
 }
 
 .code-block code {
@@ -578,6 +609,8 @@
   color: white;
   padding: 2rem;
   border-radius: 12px;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .score-number h2 {
@@ -744,23 +777,64 @@
   min-width: 100px;
 }
 
+/* Alignment Guides */
+.alignment-guide {
+  position: absolute;
+  background: #667eea;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.8;
+}
+
+.alignment-guide.vertical {
+  width: 2px;
+  height: 100%;
+  top: 0;
+}
+
+.alignment-guide.horizontal {
+  height: 2px;
+  width: 100%;
+  left: 0;
+}
+
+.guide-label {
+  position: absolute;
+  background: #667eea;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.alignment-guide.vertical .guide-label {
+  top: 10px;
+  left: 5px;
+}
+
+.alignment-guide.horizontal .guide-label {
+  left: 10px;
+  top: 5px;
+}
+
+
 @media (max-width: 1024px) {
-  .canvas-container {
-    flex-direction: column;
-  }
-  
   .canvas-wrapper,
   .preview-panel {
-    max-height: none;
+    min-height: 500px;
+    max-height: 500px;
   }
   
   .canvas-dropzone,
   .preview-canvas {
-    height: 500px;
+    height: 400px;
   }
   
   .code-block {
-    font-size: 0.8rem;
+    height: 350px;
   }
   
   .canvas-header-bar {

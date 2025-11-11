@@ -89,13 +89,21 @@ function App() {
           <h1>🎨 Drag to Style</h1>
           <p>Drop the Design, Drop the Code!</p>
         </header>
-        <Sidebar />
-        <Canvas 
-          elements={canvasElements} 
-          onRemove={removeElement}
-          onUpdate={updateElement}
-          onPositionUpdate={updatePosition}
-        />
+        
+        <div className="main-content">
+          <div className="sidebar-container">
+            <Sidebar />
+          </div>
+          
+          <div className="canvas-container-wrapper">
+            <Canvas 
+              elements={canvasElements} 
+              onRemove={removeElement}
+              onUpdate={updateElement}
+              onPositionUpdate={updatePosition}
+            />
+          </div>
+        </div>
       </div>
     </DndContext>
   );

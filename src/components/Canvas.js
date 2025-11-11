@@ -7,7 +7,7 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
   const [content, setContent] = useState(element.content || '');
   const [showColorPicker, setShowColorPicker] = useState(false);
   
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `canvas-${element.id}`,
     data: { isCanvasElement: true }
   });
@@ -18,7 +18,7 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
     top: element.position?.y || 0,
     transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
     cursor: isEditing ? 'text' : 'move',
-    zIndex: isEditing ? 1000 : showColorPicker ? 999 : 1,
+    zIndex: isEditing ? 1000 : showColorPicker ? 999 : isDragging ? 998 : 1,
     width: element.width || 'auto',
     height: element.height || 'auto',
   };
@@ -66,6 +66,17 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
+  };
+
+  // COLOR PICKER HANDLERS - FIXED
+  const handleBgColorChange = (e) => {
+    e.stopPropagation();
+    onUpdate(element.id, { bgColor: e.target.value });
+  };
+
+  const handleTextColorChange = (e) => {
+    e.stopPropagation();
+    onUpdate(element.id, { textColor: e.target.value });
   };
 
   const dragHandlers = isEditing ? {} : { ...listeners, ...attributes };
@@ -219,18 +230,17 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
           e.preventDefault();
           setShowColorPicker(!showColorPicker);
         }}
-        onMouseDown={(e) => e.stopPropagation()}
         type="button"
       >
         🎨
       </button>
 
-      {/* Color Picker Panel */}
+      {/* Color Picker Panel - ULTIMATE FIX */}
       {showColorPicker && (
         <div 
-          className="color-picker-panel" 
-          onClick={(e) => e.stopPropagation()}
+          className="color-picker-panel"
           onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
         >
           {hasBackgroundColor && (
             <div className="color-option">
@@ -238,11 +248,10 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
               <input 
                 type="color" 
                 value={element.bgColor || '#667eea'}
-                onChange={(e) => {
-                  e.stopPropagation();
-                  onUpdate(element.id, { bgColor: e.target.value });
-                }}
+                onChange={handleBgColorChange}
+                onInput={handleBgColorChange}
                 onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
                 className="mini-color-picker"
               />
             </div>
@@ -252,11 +261,10 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
             <input 
               type="color" 
               value={element.textColor || '#000000'}
-              onChange={(e) => {
-                e.stopPropagation();
-                onUpdate(element.id, { textColor: e.target.value });
-              }}
+              onChange={handleTextColorChange}
+              onInput={handleTextColorChange}
               onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
               className="mini-color-picker"
             />
           </div>
@@ -289,12 +297,9 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
-          console.log('DELETE clicked for:', element.id);
           onRemove(element.id);
         }}
-        onMouseDown={(e) => {
-          e.stopPropagation();
-        }}
+        onMouseDown={(e) => e.stopPropagation()}
         type="button"
       >
         ✕
@@ -310,6 +315,7 @@ const Canvas = ({ elements, onRemove, onUpdate }) => {
   const [viewAllCode, setViewAllCode] = useState(true);
   const [selectedElement, setSelectedElement] = useState(null);
   const [bodyColor, setBodyColor] = useState('#ffffff');
+  const [showGrid, setShowGrid] = useState(true);
   
   const { setNodeRef } = useDroppable({
     id: 'canvas',
@@ -321,9 +327,9 @@ const Canvas = ({ elements, onRemove, onUpdate }) => {
     
     switch (element.type) {
       case 'header':
-        return `${indent}<header>\\n${indent}  ${content}\\n${indent}</header>`;
+        return `${indent}<header>\n${indent}  ${content}\n${indent}</header>`;
       case 'nav':
-        return `${indent}<nav>\\n${indent}  ${content}\\n${indent}</nav>`;
+        return `${indent}<nav>\n${indent}  ${content}\n${indent}</nav>`;
       case 'h1':
         return `${indent}<h1>${content}</h1>`;
       case 'h2':
@@ -339,9 +345,9 @@ const Canvas = ({ elements, onRemove, onUpdate }) => {
       case 'img':
         return `${indent}<img src="${content || 'image.jpg'}" alt="Image">`;
       case 'footer':
-        return `${indent}<footer>\\n${indent}  ${content}\\n${indent}</footer>`;
+        return `${indent}<footer>\n${indent}  ${content}\n${indent}</footer>`;
       case 'section':
-        return `${indent}<section>\\n${indent}  ${content}\\n${indent}</section>`;
+        return `${indent}<section>\n${indent}  ${content}\n${indent}</section>`;
       case 'div':
         return `${indent}<div>${content}</div>`;
       default:
@@ -360,30 +366,30 @@ const Canvas = ({ elements, onRemove, onUpdate }) => {
       return aY - bY;
     });
 
-    let html = '<!DOCTYPE html>\\n<html lang="en">\\n<head>\\n';
-    html += '  <meta charset="UTF-8">\\n';
-    html += '  <meta name="viewport" content="width=device-width, initial-scale=1.0">\\n';
-    html += '  <title>My Website</title>\\n';
-    html += '  <style>\\n';
-    html += `    body {\\n`;
-    html += `      background-color: ${bodyColor};\\n`;
-    html += `      margin: 0;\\n`;
-    html += `      padding: 20px;\\n`;
-    html += `      font-family: Arial, sans-serif;\\n`;
-    html += `    }\\n`;
-    html += '  </style>\\n';
-    html += '</head>\\n';
-    html += '<body>\\n\\n';
+    let html = '<!DOCTYPE html>\n<html lang="en">\n<head>\n';
+    html += '  <meta charset="UTF-8">\n';
+    html += '  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n';
+    html += '  <title>My Website</title>\n';
+    html += '  <style>\n';
+    html += `    body {\n`;
+    html += `      background-color: ${bodyColor};\n`;
+    html += `      margin: 0;\n`;
+    html += `      padding: 20px;\n`;
+    html += `      font-family: Arial, sans-serif;\n`;
+    html += `    }\n`;
+    html += '  </style>\n';
+    html += '</head>\n';
+    html += '<body>\n\n';
 
     if (viewAllCode) {
       sortedElements.forEach(element => {
-        html += generateElementCode(element) + '\\n\\n';
+        html += generateElementCode(element) + '\n\n';
       });
     } else if (selectedElement) {
-      html += generateElementCode(selectedElement) + '\\n\\n';
+      html += generateElementCode(selectedElement) + '\n\n';
     }
 
-    html += '</body>\\n</html>';
+    html += '</body>\n</html>';
     return html;
   };
 
@@ -550,13 +556,23 @@ const Canvas = ({ elements, onRemove, onUpdate }) => {
                 className="color-picker"
               />
             </label>
+            <button 
+              className="grid-toggle-btn" 
+              onClick={() => setShowGrid(!showGrid)}
+            >
+              {showGrid ? '🔲 Hide Grid' : '▢ Show Grid'}
+            </button>
             <span className="element-count">{elements.length} elements</span>
             <button className="score-btn" onClick={handleCheckScore}>
               🏆 Check Score
             </button>
           </div>
         </div>
-        <div ref={setNodeRef} className="canvas-dropzone" style={{backgroundColor: bodyColor}}>
+        <div 
+          ref={setNodeRef} 
+          className={`canvas-dropzone ${showGrid ? 'with-grid' : ''}`}
+          style={{backgroundColor: bodyColor}}
+        >
           {elements.length === 0 ? (
             <div className="empty-state">
               <p>👆 Drag elements here to start designing!</p>
