@@ -1,12 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import Sidebar from './components/Sidebar';
 import Canvas from './components/Canvas';
+import Login from './components/Login';
 import { DndContext } from '@dnd-kit/core';
+import { saveScore, getUserScores, getHighestScore } from './utils/scoreManager';
 
 function App() {
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [canvasElements, setCanvasElements] = useState([]);
   const [activeId, setActiveId] = useState(null);
+
+  // Check for existing user session on mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem('dragToStyleUser');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        localStorage.removeItem('dragToStyleUser');
+      }
+    }
+    setIsLoading(false);
+  }, []);
+
+  const handleLogin = (userData) => {
+    setUser(userData);
+  };
+
+  const handleLogout = () => {
+    const confirmed = window.confirm('Are you sure you want to logout? Your current design will be lost.');
+    if (confirmed) {
+      localStorage.removeItem('dragToStyleUser');
+      setUser(null);
+      setCanvasElements([]);
+    }
+  };
+
+  // SAVE SCORE FUNCTION - Moved inside component
+  const handleSaveScore = () => {
+    if (!user) {
+      alert('Please login first!');
+      return;
+    }
+    
+    const score = 95; // Your calculated score
+    saveScore(user.id, score, canvasElements);
+    alert('Score saved! 🎉');
+    
+    // Optional: Show user's scores
+    const userScores = getUserScores(user.id);
+    console.log('All scores:', userScores);
+    
+    // Optional: Show highest score
+    const highScore = getHighestScore(user.id);
+    console.log('High score:', highScore);
+  };
 
   const handleDragStart = (event) => {
     setActiveId(event.active.id);
@@ -15,24 +65,19 @@ function App() {
   const handleDragEnd = (event) => {
     const { active, over, delta } = event;
 
-    // Check if dragging from sidebar to canvas
     if (over && over.id === 'canvas' && !active.data.current?.isCanvasElement) {
       const elementType = active.id;
       
-      // Get canvas bounds to calculate relative position
       const canvasElement = document.querySelector('.canvas-dropzone');
       const canvasRect = canvasElement?.getBoundingClientRect();
       
-      // Calculate position relative to canvas
-      let x = 50; // Default position
+      let x = 50;
       let y = 50;
       
       if (canvasRect && event.activatorEvent) {
-        // Get the mouse/touch position
         const clientX = event.activatorEvent.clientX || event.activatorEvent.touches?.[0]?.clientX || 0;
         const clientY = event.activatorEvent.clientY || event.activatorEvent.touches?.[0]?.clientY || 0;
         
-        // Calculate relative position within canvas
         x = Math.max(10, clientX - canvasRect.left + delta.x);
         y = Math.max(10, clientY - canvasRect.top + delta.y);
       }
@@ -46,7 +91,6 @@ function App() {
       setCanvasElements([...canvasElements, newElement]);
     }
 
-    // Check if repositioning element on canvas
     if (active.data.current?.isCanvasElement && delta) {
       const elementId = active.id.replace('canvas-', '');
       setCanvasElements(canvasElements.map(el => {
@@ -82,14 +126,67 @@ function App() {
     ));
   };
 
+  const handleRestart = () => {
+    if (canvasElements.length === 0) {
+      alert('Canvas is already empty! 🎨');
+      return;
+    }
+    
+    const confirmed = window.confirm(
+      `🔄 Are you sure you want to restart?\n\nThis will delete all ${canvasElements.length} elements on the canvas.`
+    );
+    
+    if (confirmed) {
+      setCanvasElements([]);
+      alert('✅ Canvas cleared! Start fresh! 🎉');
+    }
+  };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: 'white',
+        fontSize: '1.5rem'
+      }}>
+        Loading...
+      </div>
+    );
+  }
+
+  // Show login if no user
+  if (!user) {
+    return <Login onLogin={handleLogin} />;
+  }
+
+  // Show game
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="App">
         <header className="header">
-          <h1>🎨 Drag to Style</h1>
-          <p>Drop the Design, Drop the Code!</p>
+          <div className="header-content">
+            <div className="header-left">
+              <h1>🎨 Drag to Style</h1>
+              <p>Drop the Design, Drop the Code! | Welcome, <strong>{user.username}</strong>!</p>
+            </div>
+            <div className="header-actions">
+              <button className="restart-btn" onClick={handleRestart}>
+                🔄 Restart
+              </button>
+              <button className="save-btn" onClick={handleSaveScore}>
+                💾 Save Score
+              </button>
+              <button className="logout-btn" onClick={handleLogout}>
+                👋 Logout
+              </button>
+            </div>
+          </div>
         </header>
-        
         <div className="main-content">
           <div className="sidebar-container">
             <Sidebar />

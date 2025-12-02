@@ -18,11 +18,24 @@ body {
   margin: 0 auto;
 }
 
+/* UPDATED HEADER with Restart Button */
 .header {
   background: white;
   padding: 1.5rem 2rem;
-  text-align: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  max-width: 1920px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+}
+
+.header-left {
+  flex: 1;
 }
 
 .header h1 {
@@ -34,9 +47,39 @@ body {
 .header p {
   color: #666;
   font-size: 1rem;
+  margin: 0;
 }
 
-/* NEW LAYOUT: Top Section (Sidebar + Canvas) */
+/* Restart Button */
+.restart-btn {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.restart-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 107, 107, 0.4);
+  background: linear-gradient(135deg, #ff5252 0%, #e04b5f 100%);
+}
+
+.restart-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}
+
+/* Main Layout */
 .main-content {
   display: flex;
   gap: 1rem;
@@ -69,6 +112,7 @@ body {
   flex-direction: column;
 }
 
+/* Responsive */
 @media (max-width: 1024px) {
   .main-content {
     flex-direction: column;
@@ -80,5 +124,66 @@ body {
   
   .preview-section {
     max-height: 300px;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .restart-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Add to existing App.css */
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.logout-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.logout-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.logout-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.header p strong {
+  color: #667eea;
+}
+
+@media (max-width: 1024px) {
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+  
+  .logout-btn {
+    width: 100%;
+    justify-content: center;
   }
 }
