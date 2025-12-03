@@ -264,15 +264,15 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
             onClick={(e) => e.stopPropagation()}
           />
         ) : (
-          <a
-            href="#"
-            className="canvas-link"
-            onDoubleClick={handleDoubleClick}
-            style={{ color: element.textColor }}
-          >
-            {content || 'Link'}
-          </a>
-        );
+    <button
+      type="button"
+      className="canvas-link"
+      onDoubleClick={handleDoubleClick}
+      style={{ color: element.textColor, background: 'none', border: 'none', padding: 0 }}
+    >
+      {content || 'Link'}
+    </button>
+  );
       case 'img':
         return isEditing ? (
           <input
@@ -291,7 +291,7 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
             {content ? (
               <img
                 src={content}
-                alt="Image failed to load – check the URL"
+                alt="Design preview"
                 style={{
                   maxWidth: '100%',
                   height: '100%',
@@ -479,7 +479,6 @@ const Canvas = ({ elements, onRemove, onUpdate, user, onScoreChange, onShowModal
   const [score, setScore] = useState(0);
   const [activeTab, setActiveTab] = useState('preview');
   const [viewAllCode, setViewAllCode] = useState(true);
-  const [selectedElement, setSelectedElement] = useState(null);
   const [bodyColor, setBodyColor] = useState('#ffffff');
   const [showGrid, setShowGrid] = useState(true);
 
@@ -565,13 +564,10 @@ const Canvas = ({ elements, onRemove, onUpdate, user, onScoreChange, onShowModal
     html += '</head>\n';
     html += '<body>\n\n';
 
-    if (viewAllCode) {
-      sortedElements.forEach((element) => {
-        html += generateElementCode(element) + '\n\n';
-      });
-    } else if (selectedElement) {
-      html += generateElementCode(selectedElement) + '\n\n';
-    }
+    sortedElements.forEach((element) => {
+  html += generateElementCode(element) + '\n\n';
+});
+
 
     html += '</body>\n</html>';
     return html;
@@ -735,11 +731,18 @@ const Canvas = ({ elements, onRemove, onUpdate, user, onScoreChange, onShowModal
           </button>
         );
       case 'a':
-        return (
-          <a key={element.id} href="#" className="preview-link" style={style}>
-            {content || 'Link'}
-          </a>
-        );
+  return (
+    <button
+      key={element.id}
+      type="button"
+      className="preview-link"
+      style={{ ...style, background: 'none', border: 'none', padding: 0 }}
+      onClick={(e) => e.preventDefault()}
+    >
+      {content || 'Link'}
+    </button>
+  );
+
       case 'img':
         return content ? (
           <img
@@ -887,11 +890,8 @@ const Canvas = ({ elements, onRemove, onUpdate, user, onScoreChange, onShowModal
         {activeTab === 'code' && (
           <div className="code-content">
             <div className="code-header">
-              <h4>
-                {viewAllCode
-                  ? 'Complete HTML Code'
-                  : `Code for: ${selectedElement?.type || 'element'}`}
-              </h4>
+              <h4>Complete HTML Code</h4>
+
               <div className="code-controls">
                 <button
                   className={`view-toggle-btn ${viewAllCode ? 'active' : ''}`}

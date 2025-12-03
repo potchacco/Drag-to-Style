@@ -11,7 +11,6 @@ function App() {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [canvasElements, setCanvasElements] = useState([]);
-  const [activeId, setActiveId] = useState(null);
   const [lastScore, setLastScore] = useState(null);
 
   // Global modal state
@@ -191,7 +190,6 @@ function App() {
     );
   }
 
-  setActiveId(null);
 };
 
 
