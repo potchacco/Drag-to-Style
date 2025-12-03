@@ -1,24 +1,34 @@
 import React, { useState } from 'react';
 import { useDroppable, useDraggable } from '@dnd-kit/core';
+import { getUserStats, getLeaderboard } from '../utils/scoreManager';
 import './Canvas.css';
 
 const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [content, setContent] = useState(element.content || '');
   const [showColorPicker, setShowColorPicker] = useState(false);
-  
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: `canvas-${element.id}`,
-    data: { isCanvasElement: true }
-  });
+
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: `canvas-${element.id}`,
+      data: { isCanvasElement: true },
+    });
 
   const style = {
     position: 'absolute',
     left: element.position?.x || 0,
     top: element.position?.y || 0,
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+    transform: transform
+      ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+      : undefined,
     cursor: isEditing ? 'text' : 'move',
-    zIndex: isEditing ? 1000 : showColorPicker ? 999 : isDragging ? 998 : 1,
+    zIndex: isEditing
+      ? 1100
+      : showColorPicker
+      ? 1090
+      : isDragging
+      ? 1080
+      : 10,
     width: element.width || 'auto',
     height: element.height || 'auto',
   };
@@ -68,7 +78,7 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
     document.addEventListener('mouseup', handleMouseUp);
   };
 
-  // COLOR PICKER HANDLERS - FIXED
+  // COLOR PICKER HANDLERS
   const handleBgColorChange = (e) => {
     e.stopPropagation();
     onUpdate(element.id, { bgColor: e.target.value });
@@ -79,9 +89,15 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
     onUpdate(element.id, { textColor: e.target.value });
   };
 
-  const dragHandlers = isEditing ? {} : { ...listeners, ...attributes };
+  const dragHandlers = isEditing
+    ? {}
+    : {
+        ...attributes,
+      };
 
-  const hasBackgroundColor = ['header', 'nav', 'button', 'footer', 'section'].includes(element.type);
+  const hasBackgroundColor = ['header', 'nav', 'button', 'footer', 'section'].includes(
+    element.type
+  );
 
   const elementStyle = {
     backgroundColor: element.bgColor,
@@ -94,121 +110,262 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
     switch (element.type) {
       case 'header':
         return isEditing ? (
-          <input type="text" value={content} onChange={handleContentChange} onBlur={handleBlur}
-            onKeyPress={handleKeyPress} autoFocus className="edit-input header-input"
-            onClick={(e) => e.stopPropagation()} />
+          <input
+            type="text"
+            value={content}
+            onChange={handleContentChange}
+            onBlur={handleBlur}
+            onKeyPress={handleKeyPress}
+            autoFocus
+            className="edit-input header-input"
+            onClick={(e) => e.stopPropagation()}
+          />
         ) : (
-          <header className="canvas-header" onDoubleClick={handleDoubleClick} style={elementStyle}>
+          <header
+            className="canvas-header"
+            onDoubleClick={handleDoubleClick}
+            style={elementStyle}
+          >
             {content || 'Header Section'}
           </header>
         );
       case 'nav':
         return isEditing ? (
-          <input type="text" value={content} onChange={handleContentChange} onBlur={handleBlur}
-            onKeyPress={handleKeyPress} autoFocus className="edit-input"
-            onClick={(e) => e.stopPropagation()} />
+          <input
+            type="text"
+            value={content}
+            onChange={handleContentChange}
+            onBlur={handleBlur}
+            onKeyPress={handleKeyPress}
+            autoFocus
+            className="edit-input"
+            onClick={(e) => e.stopPropagation()}
+          />
         ) : (
-          <nav className="canvas-nav" onDoubleClick={handleDoubleClick} style={elementStyle}>
+          <nav
+            className="canvas-nav"
+            onDoubleClick={handleDoubleClick}
+            style={elementStyle}
+          >
             {content || 'Navigation'}
           </nav>
         );
       case 'h1':
         return isEditing ? (
-          <input type="text" value={content} onChange={handleContentChange} onBlur={handleBlur}
-            onKeyPress={handleKeyPress} autoFocus className="edit-input h1-input"
-            onClick={(e) => e.stopPropagation()} />
+          <input
+            type="text"
+            value={content}
+            onChange={handleContentChange}
+            onBlur={handleBlur}
+            onKeyPress={handleKeyPress}
+            autoFocus
+            className="edit-input h1-input"
+            onClick={(e) => e.stopPropagation()}
+          />
         ) : (
-          <h1 className="canvas-h1" onDoubleClick={handleDoubleClick} style={{color: element.textColor}}>
+          <h1
+            className="canvas-h1"
+            onDoubleClick={handleDoubleClick}
+            style={{ color: element.textColor }}
+          >
             {content || 'Main Heading'}
           </h1>
         );
       case 'h2':
         return isEditing ? (
-          <input type="text" value={content} onChange={handleContentChange} onBlur={handleBlur}
-            onKeyPress={handleKeyPress} autoFocus className="edit-input h2-input"
-            onClick={(e) => e.stopPropagation()} />
+          <input
+            type="text"
+            value={content}
+            onChange={handleContentChange}
+            onBlur={handleBlur}
+            onKeyPress={handleKeyPress}
+            autoFocus
+            className="edit-input h2-input"
+            onClick={(e) => e.stopPropagation()}
+          />
         ) : (
-          <h2 className="canvas-h2" onDoubleClick={handleDoubleClick} style={{color: element.textColor}}>
+          <h2
+            className="canvas-h2"
+            onDoubleClick={handleDoubleClick}
+            style={{ color: element.textColor }}
+          >
             {content || 'Subheading'}
           </h2>
         );
       case 'h3':
         return isEditing ? (
-          <input type="text" value={content} onChange={handleContentChange} onBlur={handleBlur}
-            onKeyPress={handleKeyPress} autoFocus className="edit-input"
-            onClick={(e) => e.stopPropagation()} />
+          <input
+            type="text"
+            value={content}
+            onChange={handleContentChange}
+            onBlur={handleBlur}
+            onKeyPress={handleKeyPress}
+            autoFocus
+            className="edit-input"
+            onClick={(e) => e.stopPropagation()}
+          />
         ) : (
-          <h3 className="canvas-h3" onDoubleClick={handleDoubleClick} style={{color: element.textColor}}>
+          <h3
+            className="canvas-h3"
+            onDoubleClick={handleDoubleClick}
+            style={{ color: element.textColor }}
+          >
             {content || 'Heading 3'}
           </h3>
         );
       case 'p':
         return isEditing ? (
-          <textarea value={content} onChange={handleContentChange} onBlur={handleBlur} autoFocus
-            className="edit-textarea" rows="3" onClick={(e) => e.stopPropagation()} />
+          <textarea
+            value={content}
+            onChange={handleContentChange}
+            onBlur={handleBlur}
+            autoFocus
+            className="edit-textarea"
+            rows="3"
+            onClick={(e) => e.stopPropagation()}
+          />
         ) : (
-          <p className="canvas-p" onDoubleClick={handleDoubleClick} style={{color: element.textColor}}>
+          <p
+            className="canvas-p"
+            onDoubleClick={handleDoubleClick}
+            style={{ color: element.textColor }}
+          >
             {content || 'Paragraph text'}
           </p>
         );
       case 'button':
         return isEditing ? (
-          <input type="text" value={content} onChange={handleContentChange} onBlur={handleBlur}
-            onKeyPress={handleKeyPress} autoFocus className="edit-input"
-            onClick={(e) => e.stopPropagation()} />
+          <input
+            type="text"
+            value={content}
+            onChange={handleContentChange}
+            onBlur={handleBlur}
+            onKeyPress={handleKeyPress}
+            autoFocus
+            className="edit-input"
+            onClick={(e) => e.stopPropagation()}
+          />
         ) : (
-          <button className="canvas-button" onDoubleClick={handleDoubleClick} style={elementStyle}>
+          <button
+            className="canvas-button"
+            onDoubleClick={handleDoubleClick}
+            style={elementStyle}
+          >
             {content || 'Click Me'}
           </button>
         );
       case 'a':
         return isEditing ? (
-          <input type="text" value={content} onChange={handleContentChange} onBlur={handleBlur}
-            onKeyPress={handleKeyPress} autoFocus className="edit-input"
-            onClick={(e) => e.stopPropagation()} />
+          <input
+            type="text"
+            value={content}
+            onChange={handleContentChange}
+            onBlur={handleBlur}
+            onKeyPress={handleKeyPress}
+            autoFocus
+            className="edit-input"
+            onClick={(e) => e.stopPropagation()}
+          />
         ) : (
-          <a href="#" className="canvas-link" onDoubleClick={handleDoubleClick} style={{color: element.textColor}}>
+          <a
+            href="#"
+            className="canvas-link"
+            onDoubleClick={handleDoubleClick}
+            style={{ color: element.textColor }}
+          >
             {content || 'Link'}
           </a>
         );
       case 'img':
         return isEditing ? (
-          <input type="text" value={content} onChange={handleContentChange} onBlur={handleBlur}
-            onKeyPress={handleKeyPress} placeholder="Enter image URL" autoFocus className="edit-input"
-            onClick={(e) => e.stopPropagation()} />
+          <input
+            type="text"
+            value={content}
+            onChange={handleContentChange}
+            onBlur={handleBlur}
+            onKeyPress={handleKeyPress}
+            placeholder="Enter image URL"
+            autoFocus
+            className="edit-input"
+            onClick={(e) => e.stopPropagation()}
+          />
         ) : (
           <div className="canvas-img" onDoubleClick={handleDoubleClick}>
             {content ? (
-              <img src={content} alt="User uploaded" style={{maxWidth: '100%', height: '100%', borderRadius: '8px', objectFit: 'cover'}} />
-            ) : '🖼️ Image'}
+              <img
+                src={content}
+                alt="User uploaded"
+                style={{
+                  maxWidth: '100%',
+                  height: '100%',
+                  borderRadius: '8px',
+                  objectFit: 'cover',
+                }}
+              />
+            ) : (
+              '🖼️ Image'
+            )}
           </div>
         );
       case 'footer':
         return isEditing ? (
-          <input type="text" value={content} onChange={handleContentChange} onBlur={handleBlur}
-            onKeyPress={handleKeyPress} autoFocus className="edit-input"
-            onClick={(e) => e.stopPropagation()} />
+          <input
+            type="text"
+            value={content}
+            onChange={handleContentChange}
+            onBlur={handleBlur}
+            onKeyPress={handleKeyPress}
+            autoFocus
+            className="edit-input"
+            onClick={(e) => e.stopPropagation()}
+          />
         ) : (
-          <footer className="canvas-footer" onDoubleClick={handleDoubleClick} style={elementStyle}>
+          <footer
+            className="canvas-footer"
+            onDoubleClick={handleDoubleClick}
+            style={elementStyle}
+          >
             {content || 'Footer'}
           </footer>
         );
       case 'section':
         return isEditing ? (
-          <textarea value={content} onChange={handleContentChange} onBlur={handleBlur} autoFocus
-            className="edit-textarea" rows="2" onClick={(e) => e.stopPropagation()} />
+          <textarea
+            value={content}
+            onChange={handleContentChange}
+            onBlur={handleBlur}
+            autoFocus
+            className="edit-textarea"
+            rows="2"
+            onClick={(e) => e.stopPropagation()}
+          />
         ) : (
-          <section className="canvas-section" onDoubleClick={handleDoubleClick} style={elementStyle}>
+          <section
+            className="canvas-section"
+            onDoubleClick={handleDoubleClick}
+            style={elementStyle}
+          >
             {content || 'Section'}
           </section>
         );
       case 'div':
         return isEditing ? (
-          <input type="text" value={content} onChange={handleContentChange} onBlur={handleBlur}
-            onKeyPress={handleKeyPress} autoFocus className="edit-input"
-            onClick={(e) => e.stopPropagation()} />
+          <input
+            type="text"
+            value={content}
+            onChange={handleContentChange}
+            onBlur={handleBlur}
+            onKeyPress={handleKeyPress}
+            autoFocus
+            className="edit-input"
+            onClick={(e) => e.stopPropagation()}
+          />
         ) : (
-          <div className="canvas-div" onDoubleClick={handleDoubleClick} style={{color: element.textColor}}>
+          <div
+            className="canvas-div"
+            onDoubleClick={handleDoubleClick}
+            style={{ color: element.textColor }}
+          >
             {content || 'Container'}
           </div>
         );
@@ -218,26 +375,35 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...dragHandlers} className="draggable-canvas-element">
-      <div className="drag-handle" {...listeners}>⋮⋮</div>
+    <div
+      ref={setNodeRef}
+      className="draggable-canvas-element"
+      style={style}
+      {...dragHandlers}
+    >
+      <div className="drag-handle" {...listeners}>
+        ⋮⋮
+      </div>
+
       {renderElement()}
-      
+
       {/* Color Picker Button */}
-      <button 
-        className="color-picker-btn" 
+      <button
+        className="color-picker-btn"
+        type="button"
+        onMouseDown={(e) => e.stopPropagation()}
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
-          setShowColorPicker(!showColorPicker);
+          setShowColorPicker((prev) => !prev);
         }}
-        type="button"
       >
         🎨
       </button>
 
-      {/* Color Picker Panel - ULTIMATE FIX */}
+      {/* Color Picker Panel */}
       {showColorPicker && (
-        <div 
+        <div
           className="color-picker-panel"
           onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
@@ -245,31 +411,27 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
           {hasBackgroundColor && (
             <div className="color-option">
               <label>Background:</label>
-              <input 
-                type="color" 
+              <input
+                type="color"
                 value={element.bgColor || '#667eea'}
                 onChange={handleBgColorChange}
                 onInput={handleBgColorChange}
-                onClick={(e) => e.stopPropagation()}
-                onMouseDown={(e) => e.stopPropagation()}
-                className="mini-color-picker"
               />
             </div>
           )}
           <div className="color-option">
             <label>Text:</label>
-            <input 
-              type="color" 
+            <input
+              type="color"
               value={element.textColor || '#000000'}
               onChange={handleTextColorChange}
               onInput={handleTextColorChange}
-              onClick={(e) => e.stopPropagation()}
-              onMouseDown={(e) => e.stopPropagation()}
-              className="mini-color-picker"
             />
           </div>
-          <button 
+          <button
             className="close-picker-btn"
+            type="button"
+            onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation();
               setShowColorPicker(false);
@@ -281,7 +443,7 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
       )}
 
       {/* Resize Handle */}
-      <div 
+      <div
         className="resize-handle"
         onMouseDown={(e) => {
           e.stopPropagation();
@@ -292,15 +454,15 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
       </div>
 
       {/* Remove Button */}
-      <button 
-        className="remove-btn" 
+      <button
+        className="remove-btn"
+        type="button"
+        onMouseDown={(e) => e.stopPropagation()}
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
           onRemove(element.id);
         }}
-        onMouseDown={(e) => e.stopPropagation()}
-        type="button"
       >
         ✕
       </button>
@@ -308,7 +470,8 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
   );
 };
 
-const Canvas = ({ elements, onRemove, onUpdate }) => {
+
+const Canvas = ({ elements, onRemove, onUpdate, user, onScoreChange }) => {
   const [showScore, setShowScore] = useState(false);
   const [score, setScore] = useState(0);
   const [activeTab, setActiveTab] = useState('preview');
@@ -316,15 +479,33 @@ const Canvas = ({ elements, onRemove, onUpdate }) => {
   const [selectedElement, setSelectedElement] = useState(null);
   const [bodyColor, setBodyColor] = useState('#ffffff');
   const [showGrid, setShowGrid] = useState(true);
-  
+
   const { setNodeRef } = useDroppable({
     id: 'canvas',
   });
 
+  const getDefaultContent = (type) => {
+    const defaults = {
+      header: 'Header Section',
+      nav: 'Navigation',
+      h1: 'Main Heading',
+      h2: 'Subheading',
+      h3: 'Heading 3',
+      p: 'Paragraph text',
+      button: 'Click Me',
+      a: 'Link',
+      img: '',
+      footer: 'Footer',
+      section: 'Section',
+      div: 'Container',
+    };
+    return defaults[type] || 'Content';
+  };
+
   const generateElementCode = (element) => {
     const content = element.content || getDefaultContent(element.type);
     const indent = '  ';
-    
+
     switch (element.type) {
       case 'header':
         return `${indent}<header>\n${indent}  ${content}\n${indent}</header>`;
@@ -382,7 +563,7 @@ const Canvas = ({ elements, onRemove, onUpdate }) => {
     html += '<body>\n\n';
 
     if (viewAllCode) {
-      sortedElements.forEach(element => {
+      sortedElements.forEach((element) => {
         html += generateElementCode(element) + '\n\n';
       });
     } else if (selectedElement) {
@@ -391,24 +572,6 @@ const Canvas = ({ elements, onRemove, onUpdate }) => {
 
     html += '</body>\n</html>';
     return html;
-  };
-
-  const getDefaultContent = (type) => {
-    const defaults = {
-      header: 'Header Section',
-      nav: 'Navigation',
-      h1: 'Main Heading',
-      h2: 'Subheading',
-      h3: 'Heading 3',
-      p: 'Paragraph text',
-      button: 'Click Me',
-      a: 'Link',
-      img: '',
-      footer: 'Footer',
-      section: 'Section',
-      div: 'Container'
-    };
-    return defaults[type] || 'Content';
   };
 
   const copyCodeToClipboard = () => {
@@ -421,8 +584,8 @@ const Canvas = ({ elements, onRemove, onUpdate }) => {
   const calculateScore = () => {
     let totalScore = 0;
     const feedback = [];
-    
-    const headerElement = elements.find(el => el.type === 'header');
+
+    const headerElement = elements.find((el) => el.type === 'header');
     if (headerElement) {
       if (headerElement.position?.y < 100) {
         totalScore += 20;
@@ -433,16 +596,16 @@ const Canvas = ({ elements, onRemove, onUpdate }) => {
     } else {
       feedback.push('❌ Missing header element');
     }
-    
-    const navElement = elements.find(el => el.type === 'nav');
+
+    const navElement = elements.find((el) => el.type === 'nav');
     if (navElement) {
       totalScore += 15;
       feedback.push('✅ Navigation included (+15 points)');
     } else {
       feedback.push('❌ Missing navigation');
     }
-    
-    const h1Element = elements.find(el => el.type === 'h1');
+
+    const h1Element = elements.find((el) => el.type === 'h1');
     if (h1Element) {
       if (h1Element.content && h1Element.content.length > 0) {
         totalScore += 15;
@@ -454,16 +617,18 @@ const Canvas = ({ elements, onRemove, onUpdate }) => {
     } else {
       feedback.push('❌ Missing main heading (h1)');
     }
-    
-    const paragraphs = elements.filter(el => el.type === 'p');
+
+    const paragraphs = elements.filter((el) => el.type === 'p');
     if (paragraphs.length > 0) {
       totalScore += Math.min(paragraphs.length * 10, 30);
-      feedback.push(`✅ Content paragraphs (+${Math.min(paragraphs.length * 10, 30)} points)`);
+      feedback.push(
+        `✅ Content paragraphs (+${Math.min(paragraphs.length * 10, 30)} points)`
+      );
     } else {
       feedback.push('❌ Missing content paragraphs');
     }
-    
-    const footerElement = elements.find(el => el.type === 'footer');
+
+    const footerElement = elements.find((el) => el.type === 'footer');
     if (footerElement) {
       if (footerElement.position?.y > 400) {
         totalScore += 20;
@@ -475,18 +640,20 @@ const Canvas = ({ elements, onRemove, onUpdate }) => {
     } else {
       feedback.push('❌ Missing footer');
     }
-    
+
     if (elements.length >= 5) {
       totalScore += 10;
       feedback.push('✅ Good content variety (+10 points)');
     }
-    
-    const customContent = elements.filter(el => el.content && el.content.length > 0);
+
+    const customContent = elements.filter(
+      (el) => el.content && el.content.length > 0
+    );
     if (customContent.length >= 3) {
       totalScore += 10;
       feedback.push('✅ Customized content (+10 points)');
     }
-    
+
     return { totalScore, feedback };
   };
 
@@ -495,6 +662,9 @@ const Canvas = ({ elements, onRemove, onUpdate }) => {
     setScore(result.totalScore);
     setShowScore(true);
     setActiveTab('score');
+    if (onScoreChange) {
+      onScoreChange(result.totalScore);
+    }
   };
 
   const renderPreviewElement = (element) => {
@@ -510,33 +680,91 @@ const Canvas = ({ elements, onRemove, onUpdate }) => {
     };
 
     switch (element.type) {
-      case 'header': 
-        return <header key={element.id} className="preview-header" style={style}>{content || 'Header'}</header>;
-      case 'nav': 
-        return <nav key={element.id} className="preview-nav" style={style}>{content || 'Nav'}</nav>;
-      case 'h1': 
-        return <h1 key={element.id} style={style}>{content || 'Heading 1'}</h1>;
-      case 'h2': 
-        return <h2 key={element.id} style={style}>{content || 'Heading 2'}</h2>;
-      case 'h3': 
-        return <h3 key={element.id} style={style}>{content || 'Heading 3'}</h3>;
-      case 'p': 
-        return <p key={element.id} style={style}>{content || 'Paragraph'}</p>;
-      case 'button': 
-        return <button key={element.id} className="preview-button" style={style}>{content || 'Button'}</button>;
-      case 'a': 
-        return <a key={element.id} href="#" className="preview-link" style={style}>{content || 'Link'}</a>;
-      case 'img': 
-        return content ? 
-          <img key={element.id} src={content} alt="preview" className="preview-img" style={style} /> : 
-          <div key={element.id} className="preview-img-placeholder" style={style}>🖼️</div>;
-      case 'footer': 
-        return <footer key={element.id} className="preview-footer" style={style}>{content || 'Footer'}</footer>;
-      case 'section': 
-        return <section key={element.id} className="preview-section" style={style}>{content || 'Section'}</section>;
-      case 'div': 
-        return <div key={element.id} className="preview-div" style={style}>{content || 'Div'}</div>;
-      default: 
+      case 'header':
+        return (
+          <header key={element.id} className="preview-header" style={style}>
+            {content || 'Header'}
+          </header>
+        );
+      case 'nav':
+        return (
+          <nav key={element.id} className="preview-nav" style={style}>
+            {content || 'Nav'}
+          </nav>
+        );
+      case 'h1':
+        return (
+          <h1 key={element.id} style={style}>
+            {content || 'Heading 1'}
+          </h1>
+        );
+      case 'h2':
+        return (
+          <h2 key={element.id} style={style}>
+            {content || 'Heading 2'}
+          </h2>
+        );
+      case 'h3':
+        return (
+          <h3 key={element.id} style={style}>
+            {content || 'Heading 3'}
+          </h3>
+        );
+      case 'p':
+        return (
+          <p key={element.id} style={style}>
+            {content || 'Paragraph'}
+          </p>
+        );
+      case 'button':
+        return (
+          <button key={element.id} className="preview-button" style={style}>
+            {content || 'Button'}
+          </button>
+        );
+      case 'a':
+        return (
+          <a key={element.id} href="#" className="preview-link" style={style}>
+            {content || 'Link'}
+          </a>
+        );
+      case 'img':
+        return content ? (
+          <img
+            key={element.id}
+            src={content}
+            alt="preview"
+            className="preview-img"
+            style={style}
+          />
+        ) : (
+          <div
+            key={element.id}
+            className="preview-img-placeholder"
+            style={style}
+          >
+            🖼️
+          </div>
+        );
+      case 'footer':
+        return (
+          <footer key={element.id} className="preview-footer" style={style}>
+            {content || 'Footer'}
+          </footer>
+        );
+      case 'section':
+        return (
+          <section key={element.id} className="preview-section" style={style}>
+            {content || 'Section'}
+          </section>
+        );
+      case 'div':
+        return (
+          <div key={element.id} className="preview-div" style={style}>
+            {content || 'Div'}
+          </div>
+        );
+      default:
         return null;
     }
   };
@@ -549,15 +777,15 @@ const Canvas = ({ elements, onRemove, onUpdate }) => {
           <div className="canvas-controls">
             <label className="color-picker-label">
               Background:
-              <input 
-                type="color" 
-                value={bodyColor} 
+              <input
+                type="color"
+                value={bodyColor}
                 onChange={(e) => setBodyColor(e.target.value)}
                 className="color-picker"
               />
             </label>
-            <button 
-              className="grid-toggle-btn" 
+            <button
+              className="grid-toggle-btn"
               onClick={() => setShowGrid(!showGrid)}
             >
               {showGrid ? '🔲 Hide Grid' : '▢ Show Grid'}
@@ -568,15 +796,18 @@ const Canvas = ({ elements, onRemove, onUpdate }) => {
             </button>
           </div>
         </div>
-        <div 
-          ref={setNodeRef} 
+        <div
+          ref={setNodeRef}
           className={`canvas-dropzone ${showGrid ? 'with-grid' : ''}`}
-          style={{backgroundColor: bodyColor}}
+          style={{ backgroundColor: bodyColor }}
         >
           {elements.length === 0 ? (
             <div className="empty-state">
               <p>👆 Drag elements here to start designing!</p>
-              <p className="hint">💡 Double-click to edit | Drag ⋮⋮ to move | 🎨 to color | ↘ to resize</p>
+              <p className="hint">
+                💡 Double-click to edit | Drag ⋮⋮ to move | 🎨 to color | ↘ to
+                resize
+              </p>
             </div>
           ) : (
             <>
@@ -595,47 +826,60 @@ const Canvas = ({ elements, onRemove, onUpdate }) => {
 
       <div className="preview-panel">
         <div className="tab-buttons">
-          <button 
+          <button
             className={`tab-btn ${activeTab === 'preview' ? 'active' : ''}`}
             onClick={() => setActiveTab('preview')}
           >
             👁️ Preview
           </button>
-          <button 
+          <button
             className={`tab-btn ${activeTab === 'code' ? 'active' : ''}`}
             onClick={() => setActiveTab('code')}
           >
             💻 HTML Code
           </button>
-          <button 
+          <button
             className={`tab-btn ${activeTab === 'score' ? 'active' : ''}`}
             onClick={() => setActiveTab('score')}
           >
             📊 Score
           </button>
+          <button
+            className={`tab-btn ${activeTab === 'profile' ? 'active' : ''}`}
+            onClick={() => setActiveTab('profile')}
+          >
+            👤 Profile
+          </button>
         </div>
 
         {activeTab === 'preview' && (
-          <div className="preview-content">
-            <h4>Live Preview (Position Accurate):</h4>
-            {elements.length === 0 ? (
-              <p className="empty-preview">No elements yet. Start dragging!</p>
-            ) : (
-              <div className="preview-canvas" style={{backgroundColor: bodyColor}}>
-                {elements.map((element) => renderPreviewElement(element))}
-              </div>
-            )}
-          </div>
-        )}
+  <div className="preview-content">
+    {elements.length === 0 ? (
+      <div className="preview-empty">
+        <p className="empty-preview">No elements yet. Start dragging!</p>
+      </div>
+    ) : (
+      <div
+        className="preview-canvas"
+        style={{ backgroundColor: bodyColor }}
+      >
+        {elements.map((element) => renderPreviewElement(element))}
+      </div>
+    )}
+  </div>
+)}
+
 
         {activeTab === 'code' && (
           <div className="code-content">
             <div className="code-header">
               <h4>
-                {viewAllCode ? 'Complete HTML Code' : `Code for: ${selectedElement?.type || 'element'}`}
+                {viewAllCode
+                  ? 'Complete HTML Code'
+                  : `Code for: ${selectedElement?.type || 'element'}`}
               </h4>
               <div className="code-controls">
-                <button 
+                <button
                   className={`view-toggle-btn ${viewAllCode ? 'active' : ''}`}
                   onClick={() => setViewAllCode(true)}
                 >
@@ -647,7 +891,10 @@ const Canvas = ({ elements, onRemove, onUpdate }) => {
               </div>
             </div>
             {!viewAllCode && (
-              <p className="code-hint">💡 Click an element on the canvas to see its code, or click "View All"</p>
+              <p className="code-hint">
+                💡 Click an element on the canvas to see its code, or click
+                "View All"
+              </p>
             )}
             <pre className="code-block">
               <code>{generateHTMLCode()}</code>
@@ -657,24 +904,108 @@ const Canvas = ({ elements, onRemove, onUpdate }) => {
 
         {activeTab === 'score' && showScore && (
           <div className="score-content">
-            <div className="score-display">
+            <div className="score-row">
               <div className="score-number">
                 <h2>{score}/100</h2>
                 <p className="score-grade">
-                  {score >= 90 ? '🌟 Excellent!' : 
-                   score >= 70 ? '👍 Great!' : 
-                   score >= 50 ? '😊 Good!' : 
-                   '💪 Keep trying!'}
+                  {score >= 90
+                    ? '🌟 Excellent!'
+                    : score >= 70
+                    ? '👍 Great!'
+                    : score >= 50
+                    ? '😊 Good!'
+                    : '💪 Keep trying!'}
                 </p>
               </div>
               <div className="score-feedback">
-                <h4>Feedback:</h4>
+                <h4>Feedback for this design:</h4>
                 <ul>
                   {calculateScore().feedback.map((item, index) => (
                     <li key={index}>{item}</li>
                   ))}
                 </ul>
               </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'profile' && user && (
+          <div className="profile-content">
+            <div className="player-profile">
+              {(() => {
+                const stats = getUserStats(user.id);
+                return (
+                  <>
+                    <h4>Player Profile</h4>
+                    <p>
+                      Username: <strong>{user.username}</strong>
+                    </p>
+                    <p>
+                      Highest score:{' '}
+                      {stats.highestScore != null
+                        ? `${stats.highestScore}/100`
+                        : 'No saved games yet'}
+                    </p>
+                    <p>
+                      Last saved score:{' '}
+                      {stats.lastScore != null
+                        ? `${stats.lastScore}/100`
+                        : 'No saved games yet'}
+                    </p>
+                    <p>
+                      Average score:{' '}
+                      {stats.averageScore != null
+                        ? `${stats.averageScore}/100`
+                        : '—'}
+                    </p>
+                    <p>Total games saved: {stats.totalGames}</p>
+                  </>
+                );
+              })()}
+            </div>
+
+            <div className="leaderboard">
+              {(() => {
+                const rows = getLeaderboard(10);
+                return (
+                  <>
+                    <h4>Local Leaderboard</h4>
+                    {rows.length === 0 ? (
+                      <p>
+                        No scores saved yet. Save a score to start the board!
+                      </p>
+                    ) : (
+                      <table className="leaderboard-table">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Player</th>
+                            <th>Best</th>
+                            <th>Last</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {rows.map((row, index) => (
+                            <tr
+                              key={row.userId}
+                              className={
+                                row.userId === user.id
+                                  ? 'leaderboard-row current-user'
+                                  : 'leaderboard-row'
+                              }
+                            >
+                              <td>{index + 1}</td>
+                              <td>{row.username}</td>
+                              <td>{row.bestScore}/100</td>
+                              <td>{row.lastScore}/100</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           </div>
         )}

@@ -390,11 +390,13 @@
   font-weight: 600;
 }
 
-.preview-content, .code-content, .score-content {
+.preview-content,
+.code-content,
+.score-content,
+.profile-content {
   flex: 1;
-  padding: 1.5rem;
-  overflow-y: auto;
-  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .preview-content h4, .code-content h4 {
@@ -404,11 +406,17 @@
 
 .preview-canvas {
   position: relative;
-  height: 500px;
-  border-radius: 8px;
-  border: 2px dashed #ddd;
-  background: white;
-  overflow: auto;
+  flex: 1;                      /* use all height inside preview-content */
+  width: 100%;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
+  overflow: auto;               /* allow scrolling if content overflows */
+  padding: 0.75rem;
+}
+
+.preview-canvas::-webkit-scrollbar {
+  display: none;              /* Chrome/Safari/Edge */
 }
 
 .empty-preview {
@@ -566,23 +574,24 @@
 }
 
 .code-block {
-  background: #2d2d2d;
-  color: #f8f8f2;
-  padding: 1.5rem;
-  border-radius: 8px;
-  font-family: 'Courier New', Consolas, Monaco, monospace;
-  font-size: 0.9rem;
-  line-height: 1.8;
-  margin: 0;
-  overflow: auto;
-  height: 400px;
+  background: #0f172a;
+  color: #e5e7eb;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  font-family: "Fira Code", Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  /* Key parts for wrapping */
+  white-space: pre-wrap;       /* keep indentation but allow wrapping */
+  word-break: break-word;      /* break very long tokens (classes, URLs, etc.) */
+  overflow-x: hidden;          /* no horizontal scrollbar */
+  overflow-y: auto;            /* YES vertical scrollbar when content is tall */
+  max-height: 520px;          /* only vertical scroll if needed */
 }
+
 
 .code-block code {
   display: block;
-  white-space: pre;
-  word-wrap: normal;
-  overflow-wrap: normal;
 }
 
 .code-block::-webkit-scrollbar {
@@ -842,3 +851,125 @@
     align-items: flex-start;
   }
 }
+
+/* Score tab layout */
+.score-content {
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.score-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+}
+
+.score-number h2 {
+  font-size: 2.4rem;
+  margin: 0;
+}
+
+.score-grade {
+  margin-top: 0.25rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.score-feedback ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+  font-size: 0.9rem;
+}
+
+.profile-content {
+  padding: 1.1rem 1.3rem;
+  display: flex;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+/* Profile smaller, tighter */
+.player-profile {
+  flex: 0.8;                    /* narrower than leaderboard */
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 0.9rem 1.1rem;       /* reduced padding to remove extra space */
+  box-shadow: 0 6px 15px rgba(15, 23, 42, 0.06);
+}
+
+.player-profile h4 {
+  margin-top: 0;
+  margin-bottom: 0.6rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.player-profile p {
+  margin: 0.2rem 0;
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+/* Leaderboard bigger, more dominant */
+.leaderboard {
+  flex: 1.5;                    /* wider than profile */
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.1rem 1.3rem;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+}
+
+.leaderboard h4 {
+  margin-top: 0;
+  margin-bottom: 0.8rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Leaderboard table */
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.leaderboard-table th,
+.leaderboard-table td {
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+}
+
+.leaderboard-table thead {
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.leaderboard-row:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.leaderboard-row.current-user {
+  background-color: #e0ecff;
+  font-weight: 600;
+}
+
+.leaderboard-row.current-user td {
+  color: #1d4ed8;
+}
+
+@media (max-width: 900px) {
+  .profile-content {
+    flex-direction: column;
+  }
+
+  .player-profile,
+  .leaderboard {
+    flex: 1;
+  }
+}
+
+
