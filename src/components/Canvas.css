@@ -61,7 +61,7 @@
   border-color: #667eea;
 }
 
-/* NEW: Grid Toggle Button */
+/* Grid toggle */
 .grid-toggle-btn {
   background: #f0f0f0;
   color: #666;
@@ -114,14 +114,13 @@
   border-radius: 0 0 12px 12px;
 }
 
-/* BETTER VISIBLE GRID - Darker dots */
+/* Grid dots */
 .canvas-dropzone.with-grid {
-  background-image: 
+  background-image:
     radial-gradient(circle, rgba(102, 126, 234, 0.4) 2px, transparent 2px);
   background-size: 20px 20px;
   background-position: 0 0;
 }
-
 
 .empty-state {
   position: absolute;
@@ -141,6 +140,8 @@
   margin-top: 0.5rem;
 }
 
+/* === CANVAS ELEMENT + CONTROLS (FIXED) === */
+
 .draggable-canvas-element {
   padding: 0.5rem;
   background: white;
@@ -150,9 +151,9 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  position: relative;
-  resize: both;
-  overflow: hidden;
+  position: absolute;        /* positioned by JS */
+  box-sizing: border-box;
+  overflow: visible;         /* allow controls and color panel to show */
 }
 
 .draggable-canvas-element:hover {
@@ -174,11 +175,11 @@
   cursor: grabbing;
 }
 
-/* Resize Handle */
+/* Resize handle – inside bottom-right corner */
 .resize-handle {
   position: absolute;
-  bottom: -2px;
-  right: -2px;
+  bottom: 4px;
+  right: 4px;
   width: 20px;
   height: 20px;
   background: #667eea;
@@ -188,7 +189,7 @@
   align-items: center;
   justify-content: center;
   font-size: 0.8rem;
-  border-radius: 0 0 6px 0;
+  border-radius: 4px;
   opacity: 0;
   transition: opacity 0.2s;
   user-select: none;
@@ -204,10 +205,10 @@
   background: #5568d3;
 }
 
-/* Color Picker Button */
+/* Color Picker Button – small circle at top center, fully inside */
 .color-picker-btn {
   position: absolute;
-  top: -12px;
+  top: 4px;
   left: 50%;
   transform: translateX(-50%);
   background: #667eea;
@@ -236,36 +237,31 @@
   opacity: 1;
 }
 
-/* Color Picker Panel */
+/* Color Picker Panel – bubble to the right of the element */
 .color-picker-panel {
   position: absolute;
-  top: -110px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: white;
-  border: 2px solid #667eea;
-  border-radius: 8px;
-  padding: 0.75rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  z-index: 1001;
+  top: 40px;
+  right: -10px;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);
+  z-index: 1300;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  min-width: 160px;
-  pointer-events: auto;
+  gap: 0.45rem;
 }
 
 .color-picker-panel::after {
   content: '';
   position: absolute;
-  bottom: -8px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: -8px;
+  right: 24px;
   width: 0;
   height: 0;
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
-  border-top: 8px solid #667eea;
+  border-bottom: 8px solid #ffffff;
 }
 
 .color-option {
@@ -273,6 +269,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+  font-size: 0.85rem;
 }
 
 .color-option label {
@@ -281,40 +278,36 @@
   font-weight: 500;
 }
 
-.mini-color-picker {
-  width: 50px;
-  height: 30px;
-  border: 2px solid #ddd;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.mini-color-picker:hover {
-  border-color: #667eea;
-}
-
-/* Close Picker Button */
-.close-picker-btn {
-  background: #667eea;
-  color: white;
+.color-option input[type="color"] {
+  width: 28px;
+  height: 24px;
+  padding: 0;
   border: none;
-  padding: 0.4rem 0.75rem;
-  border-radius: 4px;
+  background: transparent;
   cursor: pointer;
-  font-size: 0.85rem;
-  margin-top: 0.25rem;
-  transition: background 0.2s;
+}
+
+/* Close/Done button inside panel */
+.close-picker-btn {
+  margin-top: 0.2rem;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.8rem;
+  border-radius: 6px;
+  border: none;
+  background: #e5e7eb;
+  cursor: pointer;
+  align-self: flex-end;
 }
 
 .close-picker-btn:hover {
-  background: #5568d3;
+  background: #d1d5db;
 }
 
-/* Remove Button */
+/* Remove Button – top-right, fully inside */
 .remove-btn {
   position: absolute;
-  top: -12px;
-  right: -12px;
+  top: 4px;
+  right: 4px;
   background: #ff4757;
   color: white;
   border: none;
@@ -336,18 +329,19 @@
 
 .remove-btn:hover {
   background: #ff1744;
-  transform: scale(1.2);
+  transform: scale(1.1);
 }
 
 .remove-btn:active {
-  transform: scale(1.1);
+  transform: scale(1.05);
 }
 
 .draggable-canvas-element:hover .remove-btn {
   opacity: 1;
 }
 
-/* Preview Panel - SAME HEIGHT AS CANVAS */
+/* === Preview panel === */
+
 .preview-panel {
   width: 100%;
   background: white;
@@ -399,24 +393,25 @@
   flex-direction: column;
 }
 
-.preview-content h4, .code-content h4 {
+.preview-content h4,
+.code-content h4 {
   margin: 0 0 1rem 0;
   color: #333;
 }
 
 .preview-canvas {
   position: relative;
-  flex: 1;                      /* use all height inside preview-content */
+  flex: 1;
   width: 100%;
   border-radius: 12px;
   background: #ffffff;
   box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
-  overflow: auto;               /* allow scrolling if content overflows */
+  overflow: auto;
   padding: 0.75rem;
 }
 
 .preview-canvas::-webkit-scrollbar {
-  display: none;              /* Chrome/Safari/Edge */
+  display: none;
 }
 
 .empty-preview {
@@ -505,6 +500,8 @@
   width: fit-content;
 }
 
+/* Code tab */
+
 .code-header {
   display: flex;
   justify-content: space-between;
@@ -581,14 +578,12 @@
   font-family: "Fira Code", Menlo, Monaco, Consolas, "Courier New", monospace;
   font-size: 0.85rem;
   line-height: 1.5;
-  /* Key parts for wrapping */
-  white-space: pre-wrap;       /* keep indentation but allow wrapping */
-  word-break: break-word;      /* break very long tokens (classes, URLs, etc.) */
-  overflow-x: hidden;          /* no horizontal scrollbar */
-  overflow-y: auto;            /* YES vertical scrollbar when content is tall */
-  max-height: 520px;          /* only vertical scroll if needed */
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: hidden;
+  overflow-y: auto;
+  max-height: 520px;
 }
-
 
 .code-block code {
   display: block;
@@ -613,25 +608,30 @@
   background: #5568d3;
 }
 
-.score-display {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 2rem;
-  border-radius: 12px;
-  height: 100%;
-  overflow-y: auto;
+/* Score layout */
+
+.score-content {
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.score-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
 }
 
 .score-number h2 {
-  font-size: 4rem;
+  font-size: 2.4rem;
   margin: 0;
-  text-align: center;
 }
 
 .score-grade {
-  text-align: center;
-  font-size: 1.5rem;
-  margin: 1rem 0 0 0;
+  margin-top: 0.25rem;
+  font-weight: 600;
+  color: #555;
 }
 
 .score-feedback {
@@ -639,7 +639,7 @@
   color: #333;
   padding: 1.5rem;
   border-radius: 8px;
-  margin-top: 1.5rem;
+  margin-top: 0.5rem;
 }
 
 .score-feedback h4 {
@@ -664,7 +664,10 @@
   border-bottom: none;
 }
 
-.edit-input, .edit-textarea {
+/* Editing inputs */
+
+.edit-input,
+.edit-textarea {
   width: 100%;
   padding: 0.5rem;
   border: 2px solid #667eea;
@@ -689,6 +692,8 @@
   font-size: 1.5rem;
   font-weight: bold;
 }
+
+/* Canvas element styles */
 
 .canvas-header {
   background: #667eea;
@@ -761,6 +766,7 @@
   cursor: pointer;
 }
 
+/* Footer looks like real footer block */
 .canvas-footer {
   background: #333;
   color: white;
@@ -768,6 +774,7 @@
   border-radius: 6px;
   cursor: pointer;
   min-width: 200px;
+  text-align: center;
 }
 
 .canvas-section {
@@ -786,7 +793,8 @@
   min-width: 100px;
 }
 
-/* Alignment Guides */
+/* Alignment guides */
+
 .alignment-guide {
   position: absolute;
   background: #667eea;
@@ -829,59 +837,7 @@
   top: 5px;
 }
 
-
-@media (max-width: 1024px) {
-  .canvas-wrapper,
-  .preview-panel {
-    min-height: 500px;
-    max-height: 500px;
-  }
-  
-  .canvas-dropzone,
-  .preview-canvas {
-    height: 400px;
-  }
-  
-  .code-block {
-    height: 350px;
-  }
-  
-  .canvas-header-bar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-
-/* Score tab layout */
-.score-content {
-  padding: 1rem 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.score-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 1.5rem;
-}
-
-.score-number h2 {
-  font-size: 2.4rem;
-  margin: 0;
-}
-
-.score-grade {
-  margin-top: 0.25rem;
-  font-weight: 600;
-  color: #555;
-}
-
-.score-feedback ul {
-  margin: 0.5rem 0 0;
-  padding-left: 1.25rem;
-  font-size: 0.9rem;
-}
+/* Profile + leaderboard */
 
 .profile-content {
   padding: 1.1rem 1.3rem;
@@ -890,12 +846,11 @@
   align-items: stretch;
 }
 
-/* Profile smaller, tighter */
 .player-profile {
-  flex: 0.8;                    /* narrower than leaderboard */
+  flex: 0.8;
   background: #ffffff;
   border-radius: 12px;
-  padding: 0.9rem 1.1rem;       /* reduced padding to remove extra space */
+  padding: 0.9rem 1.1rem;
   box-shadow: 0 6px 15px rgba(15, 23, 42, 0.06);
 }
 
@@ -913,9 +868,8 @@
   color: #374151;
 }
 
-/* Leaderboard bigger, more dominant */
 .leaderboard {
-  flex: 1.5;                    /* wider than profile */
+  flex: 1.5;
   background: #ffffff;
   border-radius: 12px;
   padding: 1.1rem 1.3rem;
@@ -930,7 +884,6 @@
   color: #111827;
 }
 
-/* Leaderboard table */
 .leaderboard-table {
   width: 100%;
   border-collapse: collapse;
@@ -972,4 +925,24 @@
   }
 }
 
+@media (max-width: 1024px) {
+  .canvas-wrapper,
+  .preview-panel {
+    min-height: 500px;
+    max-height: 500px;
+  }
 
+  .canvas-dropzone,
+  .preview-canvas {
+    height: 400px;
+  }
+
+  .code-block {
+    height: 350px;
+  }
+
+  .canvas-header-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

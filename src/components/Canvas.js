@@ -23,11 +23,11 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
       : undefined,
     cursor: isEditing ? 'text' : 'move',
     zIndex: isEditing
-      ? 1100
+      ? 1200
       : showColorPicker
-      ? 1090
+      ? 1190
       : isDragging
-      ? 1080
+      ? 1180
       : 10,
     width: element.width || 'auto',
     height: element.height || 'auto',
@@ -89,11 +89,8 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
     onUpdate(element.id, { textColor: e.target.value });
   };
 
-  const dragHandlers = isEditing
-    ? {}
-    : {
-        ...attributes,
-      };
+  // Only drag by handle; wrapper only carries attributes, not listeners
+  const wrapperDragProps = isEditing ? {} : { ...attributes };
 
   const hasBackgroundColor = ['header', 'nav', 'button', 'footer', 'section'].includes(
     element.type
@@ -294,7 +291,7 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
             {content ? (
               <img
                 src={content}
-                alt="User uploaded"
+                alt="Image failed to load – check the URL"
                 style={{
                   maxWidth: '100%',
                   height: '100%',
@@ -374,34 +371,64 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
     }
   };
 
-  return (
+      return (
     <div
       ref={setNodeRef}
       className="draggable-canvas-element"
       style={style}
-      {...dragHandlers}
+      {...wrapperDragProps}
     >
-      <div className="drag-handle" {...listeners}>
+      {/* Drag handle is the only part that starts drag */}
+      <div
+        className="drag-handle"
+        {...listeners}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
         ⋮⋮
       </div>
 
       {renderElement()}
 
-      {/* Color Picker Button */}
-      <button
-        className="color-picker-btn"
-        type="button"
-        onMouseDown={(e) => e.stopPropagation()}
-        onClick={(e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          setShowColorPicker((prev) => !prev);
-        }}
-      >
-        🎨
-      </button>
+      {/* Controls row under the element */}
+      <div className="element-controls">
+        <button
+          className="color-picker-btn"
+          type="button"
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            setShowColorPicker((prev) => !prev);
+          }}
+        >
+          🎨
+        </button>
 
-      {/* Color Picker Panel */}
+        <div
+          className="resize-handle"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            handleResize(e);
+          }}
+        >
+          ↘
+        </div>
+
+        <button
+          className="remove-btn"
+          type="button"
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            onRemove(element.id);
+          }}
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Color Picker Panel (floats above controls) */}
       {showColorPicker && (
         <div
           className="color-picker-panel"
@@ -410,7 +437,7 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
         >
           {hasBackgroundColor && (
             <div className="color-option">
-              <label>Background:</label>
+              <label>Background</label>
               <input
                 type="color"
                 value={element.bgColor || '#667eea'}
@@ -420,7 +447,7 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
             </div>
           )}
           <div className="color-option">
-            <label>Text:</label>
+            <label>Text</label>
             <input
               type="color"
               value={element.textColor || '#000000'}
@@ -437,41 +464,17 @@ const DraggableCanvasElement = ({ element, onRemove, onUpdate }) => {
               setShowColorPicker(false);
             }}
           >
-            Close
+            Done
           </button>
         </div>
       )}
-
-      {/* Resize Handle */}
-      <div
-        className="resize-handle"
-        onMouseDown={(e) => {
-          e.stopPropagation();
-          handleResize(e);
-        }}
-      >
-        ↘
-      </div>
-
-      {/* Remove Button */}
-      <button
-        className="remove-btn"
-        type="button"
-        onMouseDown={(e) => e.stopPropagation()}
-        onClick={(e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          onRemove(element.id);
-        }}
-      >
-        ✕
-      </button>
     </div>
   );
 };
 
 
-const Canvas = ({ elements, onRemove, onUpdate, user, onScoreChange }) => {
+
+const Canvas = ({ elements, onRemove, onUpdate, user, onScoreChange, onShowModal }) => {
   const [showScore, setShowScore] = useState(false);
   const [score, setScore] = useState(0);
   const [activeTab, setActiveTab] = useState('preview');
@@ -577,7 +580,16 @@ const Canvas = ({ elements, onRemove, onUpdate, user, onScoreChange }) => {
   const copyCodeToClipboard = () => {
     const code = generateHTMLCode();
     navigator.clipboard.writeText(code).then(() => {
-      alert('✅ HTML code copied to clipboard!');
+      if (onShowModal) {
+        onShowModal({
+          title: 'Code copied',
+          message: 'Your HTML code is now in the clipboard. Paste it into your editor to use it.',
+          confirmLabel: 'Great!',
+        });
+      } else {
+        // Fallback if modal not provided
+        alert('✅ HTML code copied to clipboard!');
+      }
     });
   };
 
@@ -736,6 +748,9 @@ const Canvas = ({ elements, onRemove, onUpdate, user, onScoreChange }) => {
             alt="preview"
             className="preview-img"
             style={style}
+            onError={(e) => {
+              e.currentTarget.alt = 'Image failed to load';
+            }}
           />
         ) : (
           <div
@@ -853,22 +868,21 @@ const Canvas = ({ elements, onRemove, onUpdate, user, onScoreChange }) => {
         </div>
 
         {activeTab === 'preview' && (
-  <div className="preview-content">
-    {elements.length === 0 ? (
-      <div className="preview-empty">
-        <p className="empty-preview">No elements yet. Start dragging!</p>
-      </div>
-    ) : (
-      <div
-        className="preview-canvas"
-        style={{ backgroundColor: bodyColor }}
-      >
-        {elements.map((element) => renderPreviewElement(element))}
-      </div>
-    )}
-  </div>
-)}
-
+          <div className="preview-content">
+            {elements.length === 0 ? (
+              <div className="preview-empty">
+                <p className="empty-preview">No elements yet. Start dragging!</p>
+              </div>
+            ) : (
+              <div
+                className="preview-canvas"
+                style={{ backgroundColor: bodyColor }}
+              >
+                {elements.map((element) => renderPreviewElement(element))}
+              </div>
+            )}
+          </div>
+        )}
 
         {activeTab === 'code' && (
           <div className="code-content">

@@ -1,0 +1,76 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at top, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.96));
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 380px;
+  padding: 1.5rem 1.7rem;
+  border-radius: 18px;
+  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 55%),
+              radial-gradient(circle at bottom right, rgba(168, 85, 247, 0.22), transparent 55%),
+              #020617;
+  box-shadow:
+    0 24px 50px rgba(15, 23, 42, 0.9),
+    0 0 0 1px rgba(148, 163, 184, 0.4);
+  color: #e5e7eb;
+}
+
+.modal-title {
+  margin: 0 0 0.45rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #f9fafb;
+}
+
+.modal-message {
+  margin: 0 0 1.1rem;
+  font-size: 0.9rem;
+  color: #d1d5db;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.modal-btn {
+  border: none;
+  outline: none;
+  border-radius: 999px;
+  padding: 0.5rem 0.95rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+}
+
+.modal-btn-primary {
+  background: linear-gradient(135deg, #22c55e 0%, #0c58d3 40%, #0e11be 80%);
+  color: #f9fafb;
+}
+
+.modal-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 40px rgba(59, 130, 246, 0.7);
+  filter: brightness(1.05);
+}
+
+.modal-btn-secondary {
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+}
+
+.modal-btn-secondary:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}

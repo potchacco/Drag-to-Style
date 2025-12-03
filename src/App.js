@@ -5,13 +5,50 @@ import Canvas from './components/Canvas';
 import Login from './components/Login';
 import { DndContext } from '@dnd-kit/core';
 import { saveScore, getUserScores, getHighestScore } from './utils/scoreManager';
+import GameModal from './components/GameModal';
 
 function App() {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [canvasElements, setCanvasElements] = useState([]);
   const [activeId, setActiveId] = useState(null);
-  const [lastScore, setLastScore] = useState(null); // NEW: last score from Canvas
+  const [lastScore, setLastScore] = useState(null);
+
+  // Global modal state
+  const [modalState, setModalState] = useState({
+    open: false,
+    title: '',
+    message: '',
+    confirmLabel: 'OK',
+    cancelLabel: null,
+    onConfirm: null,
+  });
+
+  const showModal = ({
+    title = '',
+    message = '',
+    confirmLabel = 'OK',
+    cancelLabel = null,
+    onConfirm = null,
+  }) => {
+    setModalState({
+      open: true,
+      title,
+      message,
+      confirmLabel,
+      cancelLabel,
+      onConfirm: onConfirm
+        ? () => {
+            setModalState((prev) => ({ ...prev, open: false }));
+            onConfirm();
+          }
+        : () => setModalState((prev) => ({ ...prev, open: false })),
+    });
+  };
+
+  const hideModal = () => {
+    setModalState((prev) => ({ ...prev, open: false }));
+  };
 
   // Check for existing user session on mount
   useEffect(() => {
@@ -31,31 +68,47 @@ function App() {
   };
 
   const handleLogout = () => {
-    const confirmed = window.confirm(
-      'Are you sure you want to logout? Your current design will be lost.'
-    );
-    if (confirmed) {
-      localStorage.removeItem('dragToStyleUser');
-      setUser(null);
-      setCanvasElements([]);
-      setLastScore(null);
-    }
+    showModal({
+      title: 'Logout?',
+      message: 'Are you sure you want to logout? Your current design will be lost.',
+      confirmLabel: 'Logout',
+      cancelLabel: 'Cancel',
+      onConfirm: () => {
+        localStorage.removeItem('dragToStyleUser');
+        setUser(null);
+        setCanvasElements([]);
+        setLastScore(null);
+      },
+    });
   };
 
   // SAVE SCORE FUNCTION - now uses lastScore from Canvas
   const handleSaveScore = () => {
     if (!user) {
-      alert('Please login first!');
+      showModal({
+        title: 'Login required',
+        message: 'Please login first before saving a score.',
+        confirmLabel: 'OK',
+      });
       return;
     }
 
     if (lastScore == null) {
-      alert('Please check your score first (🏆 Check Score) before saving!');
+      showModal({
+        title: 'Check score first',
+        message: 'Use 🏆 Check Score before saving so there is a score to save.',
+        confirmLabel: 'Got it',
+      });
       return;
     }
 
     saveScore(user.id, lastScore, canvasElements);
-    alert('Score saved! 🎉');
+
+    showModal({
+      title: 'Score saved',
+      message: `Your score of ${lastScore}/100 has been saved locally on this device.`,
+      confirmLabel: 'Nice!',
+    });
 
     // Optional debug logs
     const userScores = getUserScores(user.id);
@@ -70,92 +123,114 @@ function App() {
   };
 
   const handleDragEnd = (event) => {
-    const { active, over, delta } = event;
+  const { active, over, delta } = event;
 
-    if (over && over.id === 'canvas' && !active.data.current?.isCanvasElement) {
-      const elementType = active.id;
+  // Dropping a new element from the sidebar onto the canvas
+  if (over && over.id === 'canvas' && !active.data.current?.isCanvasElement) {
+    const elementType = active.id;
 
-      const canvasElement = document.querySelector('.canvas-dropzone');
-      const canvasRect = canvasElement?.getBoundingClientRect();
+    const canvasElement = document.querySelector('.canvas-dropzone');
+    const canvasRect = canvasElement?.getBoundingClientRect();
 
-      let x = 50;
-      let y = 50;
+    let x = 50;
+    let y = 50;
+    let width;
+    let height;
 
-      if (canvasRect && event.activatorEvent) {
-        const clientX =
-          event.activatorEvent.clientX ||
-          event.activatorEvent.touches?.[0]?.clientX ||
-          0;
-        const clientY =
-          event.activatorEvent.clientY ||
-          event.activatorEvent.touches?.[0]?.clientY ||
-          0;
+    if (canvasRect && event.activatorEvent) {
+      const clientX =
+        event.activatorEvent.clientX ||
+        event.activatorEvent.touches?.[0]?.clientX ||
+        0;
+      const clientY =
+        event.activatorEvent.clientY ||
+        event.activatorEvent.touches?.[0]?.clientY ||
+        0;
 
-        x = Math.max(10, clientX - canvasRect.left + delta.x);
-        y = Math.max(10, clientY - canvasRect.top + delta.y);
-      }
-
-      const newElement = {
-        id: `${elementType}-${Date.now()}`,
-        type: elementType,
-        content: '',
-        position: { x, y },
-      };
-      setCanvasElements([...canvasElements, newElement]);
+      x = Math.max(10, clientX - canvasRect.left + delta.x);
+      y = Math.max(10, clientY - canvasRect.top + delta.y);
     }
 
-    if (active.data.current?.isCanvasElement && delta) {
-      const elementId = active.id.replace('canvas-', '');
-      setCanvasElements(
-        canvasElements.map((el) => {
-          if (el.id === elementId) {
-            return {
-              ...el,
-              position: {
-                x: Math.max(0, (el.position?.x || 0) + delta.x),
-                y: Math.max(0, (el.position?.y || 0) + delta.y),
-              },
-            };
-          }
-          return el;
-        })
-      );
+    // Special behavior for footer: full width at bottom like a real footer
+    if (canvasRect && elementType === 'footer') {
+      x = 0;
+      const footerHeight = 80;
+      width = canvasRect.width;
+      height = footerHeight;
+      y = Math.max(canvasRect.height - footerHeight - 20, 10);
     }
 
-    setActiveId(null);
-  };
+    const newElement = {
+      id: `${elementType}-${Date.now()}`,
+      type: elementType,
+      content: '',
+      position: { x, y },
+      ...(width !== undefined ? { width } : {}),
+      ...(height !== undefined ? { height } : {}),
+    };
+
+    setCanvasElements((prev) => [...prev, newElement]);
+  }
+
+  // Moving an existing canvas element
+  if (active.data.current?.isCanvasElement && delta) {
+    const elementId = active.id.replace('canvas-', '');
+    setCanvasElements((prev) =>
+      prev.map((el) => {
+        if (el.id === elementId) {
+          return {
+            ...el,
+            position: {
+              x: Math.max(0, (el.position?.x || 0) + delta.x),
+              y: Math.max(0, (el.position?.y || 0) + delta.y),
+            },
+          };
+        }
+        return el;
+      })
+    );
+  }
+
+  setActiveId(null);
+};
+
 
   const removeElement = (id) => {
-    setCanvasElements(canvasElements.filter((el) => el.id !== id));
+    setCanvasElements((prev) => prev.filter((el) => el.id !== id));
   };
 
   const updateElement = (id, updates) => {
-    setCanvasElements(
-      canvasElements.map((el) => (el.id === id ? { ...el, ...updates } : el))
+    setCanvasElements((prev) =>
+      prev.map((el) => (el.id === id ? { ...el, ...updates } : el))
     );
   };
 
   const updatePosition = (id, position) => {
-    setCanvasElements(
-      canvasElements.map((el) => (el.id === id ? { ...el, position } : el))
+    setCanvasElements((prev) =>
+      prev.map((el) => (el.id === id ? { ...el, position } : el))
     );
   };
 
   const handleRestart = () => {
     if (canvasElements.length === 0) {
-      alert('Canvas is already empty! 🎨');
+      showModal({
+        title: 'Nothing to clear',
+        message: 'The canvas is already empty. Drag elements from the sidebar to start designing.',
+        confirmLabel: 'OK',
+      });
       return;
     }
 
-    const confirmed = window.confirm(
-      `🔄 Are you sure you want to restart?\n\nThis will delete all ${canvasElements.length} elements on the canvas.`
-    );
-
-    if (confirmed) {
-      setCanvasElements([]);
-      setLastScore(null);
-      alert('✅ Canvas cleared! Start fresh! 🎉');
-    }
+    showModal({
+      title: 'Restart design?',
+      message: `This will delete all ${canvasElements.length} elements on the canvas and clear the last score.`,
+      confirmLabel: 'Restart',
+      cancelLabel: 'Cancel',
+      onConfirm: () => {
+        setCanvasElements([]);
+        setLastScore(null);
+      },
+    });
   };
 
   // Show loading state
@@ -219,12 +294,23 @@ function App() {
               onRemove={removeElement}
               onUpdate={updateElement}
               onPositionUpdate={updatePosition}
-              user={user}                   // NEW: pass user
-              onScoreChange={setLastScore}  // NEW: receive latest score
+              user={user}
+              onScoreChange={setLastScore}
+              onShowModal={showModal}
             />
           </div>
         </div>
       </div>
+
+      <GameModal
+        open={modalState.open}
+        title={modalState.title}
+        message={modalState.message}
+        confirmLabel={modalState.confirmLabel}
+        cancelLabel={modalState.cancelLabel}
+        onConfirm={modalState.onConfirm}
+        onCancel={modalState.cancelLabel ? hideModal : null}
+      />
     </DndContext>
   );
 }
