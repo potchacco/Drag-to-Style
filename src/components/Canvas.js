@@ -524,7 +524,7 @@ const Canvas = ({ elements, onRemove, onUpdate, user, onScoreChange, onShowModal
       case 'button':
         return `${indent}<button>${content}</button>`;
       case 'a':
-        return `${indent}<a href="#">${content}</a>`;
+        return `${indent}<a href="https://example.com">${content}</a>`;
       case 'img':
         return `${indent}<img src="${content || 'image.jpg'}" alt="Image">`;
       case 'footer':

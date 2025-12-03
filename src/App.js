@@ -117,9 +117,10 @@ function App() {
     console.log('High score:', highScore);
   };
 
-  const handleDragStart = (event) => {
-    setActiveId(event.active.id);
+    const handleDragStart = (event) => {
+    // no special logic needed for now
   };
+
 
   const handleDragEnd = (event) => {
   const { active, over, delta } = event;
